@@ -1,100 +1,62 @@
-import React from "react";
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useState, useRef } from "react";
+import Task from "./task";
 import "./../styles/App.css";
 
-const ToDo = () => {
-    const [tempInput, setTempInput] = useState('');
-    const [todolist, setTodolist] = useState([]);
-    const [editId, setEditId] = useState('');
-    const [editValue, setEditValue] = useState('');
-    const [showEdit, setShowEdit] = useState(false);
+function App() {
+  const [tasks, setTasks] = useState([]);
+  const [newTask, setNewTask] = useState("");
 
+  const taskId = useRef(0);
 
-    const handleChange = (event) => {
-        console.log('user has typed - ', event.target.value);
-        setTempInput(event.target.value);
-    }
-    const handleSubmit = () => {
-        let obj = {
-            id: nanoid(),
-            task: tempInput,
-            status: false
-        }
-        setTodolist([...todolist, obj]);
-        setTempInput('');
-    }
+  const addTask = () => {
+    const updatedTasks = [...tasks];
+    updatedTasks.push({ id: taskId.current, text: newTask });
+    taskId.current = taskId.current + 1;
+    setNewTask("");
+    setTasks(updatedTasks);
+  };
 
-    useEffect(()=> {
-        console.log(todolist);
-    })
+  const handleDelete = (id) => {
+    const taskCopy = [...tasks];
+    const filteredTasks = taskCopy.filter((task) =>
+      task.id !== id ? task : null
+    );
+    setTasks(filteredTasks);
+  };
 
-    useEffect(() => {
-        //callApi();
-        console.log('useeffect of to do  got triggered...');
-        loginDetails.setBgColor('#a3e7cb');
-    })
+  const saveChangedText = (id, newtext) => {
+    const taskCopy = [...tasks];
+    taskCopy.forEach((task) => {
+      if (task.id === id) {
+        task.text = newtext;
+      }
+    });
+    setTasks(taskCopy);
+  };
 
-    const editFn = (data) => {
-        console.log('data', data);
-        setEditId(data);
-        setShowEdit(true);
-    }
-
-    const tempEditFn = (event) => {
-        console.log(event.target.value);
-        setEditValue(event.target.value);
-    }
-
-    const saveEditFn = () => {
-        setShowEdit(false);
-        let tempList = todolist.map((temp) => {
-            if(temp.id === editId) {
-                temp.task = editValue;
-            }
-            return temp;
-        })
-        //  console.log(tempList);
-        setTodolist(tempList);
-    }
-	return (
-	<>  
-        <div className='row bg-info bg-opacity-50'>
-            <div className='col-9'>
-                {loginDetails.isLoggedIn && <div>Hi {loginDetails.userName}</div>}
-            </div>
-            <div className='col-3'>
-                {loginDetails.isLoggedIn ? 
-                (<button onClick={() => loginDetails.setLogin(false)}>Logout</button>) :
-                (<button onClick={() => loginDetails.setLogin(true)}>Login</button>)}
-            </div>
-        </div>
-        <div>------------------------------------------</div>
-        <div>
-            <input type="text" value={tempInput} onChange={handleChange}/>
-            <button onClick={handleSubmit}>Add</button>
-        </div>
-        <div>
-            <div>------------------------------------------</div>
-            {todolist && todolist.map((item, index) => (
-                <div key={item.id + index}>
-                    <span>{item.task}</span>
-                    <button className="btn btn-secondary"  onClick={() => editFn(item.id)}>Edit</button>
-                    <button className="btn btn-danger"  onClick={() => editFn(item.id)}>Delete</button>
-                    <button className="btn btn-success" onClick={() => editFn(item.id)}>Done</button>
-                </div>
-            ))}
-        </div>
-        <div>------------------------------------------</div>
-        {showEdit && (<>
-            <input type="text" onChange={tempEditFn} value={editValue}/>
-            <button onClick={saveEditFn}>Save Edited Data</button>
-            </>)
-        }
-        <div>------------------------------------------</div>
-
-        </>
-	);
+  return (
+    <div id="main">
+      <input
+        id="task"
+        type="textarea"
+        value={newTask}
+        onChange={(e) => setNewTask(e.target.value)}
+      ></input>
+      <button id="btn" onClick={addTask} disabled={!newTask}>
+        Add
+      </button>
+      <ul>
+        {tasks.map((task) => (
+          <Task
+            key={task.id}
+            task={task}
+            saveChangedText={saveChangedText}
+            handleDelete={handleDelete}
+          />
+        ))}
+      </ul>
+    </div>
+  );
 }
 
-
-export default ToDo;
+export default App;
